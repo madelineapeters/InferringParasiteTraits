@@ -1,0 +1,70 @@
+model {
+  
+  #Fixed effects
+  BN ~ dunif(0,0.35)
+  BA ~ dnorm(0.32,1/pow(0.1,2))
+  lN = 1
+  lA = 1
+  c ~ dunif(0.5,1)
+  P0 ~ dnorm(5.25,1/pow(0.2,2))
+  mu ~ dnorm(0.32, 1/pow(0.05,2))
+  sigma ~ dnorm(0.26,1/pow(0.1,2))
+  sd ~ dunif(0.01,0.3)
+  
+  ################################################
+  ## ODEs (Euler method)
+  ################################################
+  
+  P0.adj= pnorm(1,mu,1/pow(sigma,2)) - pnorm(0,mu,1/pow(sigma,2))
+    
+  #Initial conditions
+  RA[1] <- (P0/P0.adj)*(pnorm(0.5,mu,1/pow(sigma,2))-pnorm(0,mu,1/pow(sigma,2))) 	# Ring-stage
+  LA[1] <- (P0/P0.adj)*(pnorm(1,mu,1/pow(sigma,2))-pnorm(0.5,mu,1/pow(sigma,2)))	# Late-stage
+  
+  RN[1] <- (P0/P0.adj)*(pnorm(0.5,mu,1/pow(sigma,2))-pnorm(0,mu,1/pow(sigma,2))) 	# Ring-stage
+  LN[1] <- (P0/P0.adj)*(pnorm(1,mu,1/pow(sigma,2))-pnorm(0.5,mu,1/pow(sigma,2)))	# Late-stage
+  
+  t[1] <- 0
+  switchA[1] <- 1
+  switchN[1] <- 1
+  
+  for(g in 2:d){	# For each timestep; T = total number of time steps (25, 1+24)
+    
+    t[g] <- g/d
+    switchA[g] <- ifelse(t[g]*lA<0.5, 1, 0)
+    switchN[g] <- ifelse(t[g]*lN<0.5, 1, 0)
+    
+    # Changes from time t-1 to time t (timestep h = 1 hour)
+    dRA[g-1] <-  BA*P0*dnorm(1-t[g]*lA, mu, 1/pow(sigma,2))*lA*exp(-c*t[g]) - switchA[g]*P0*dnorm(0.5-t[g]*lA, mu, 1/pow(sigma,2))*lA*exp(-c*t[g]) - c*RA[g-1] - (1-switchA[g])*BA*P0*dnorm(1.5-t[g]*lA, mu, 1/pow(sigma,2))*lA*exp(-c*t[g])
+    dLA[g-1] <- switchA[g]*P0*dnorm(0.5-t[g]*lA, mu, 1/pow(sigma,2))*lA*exp(-c*t[g]) - P0*dnorm(1-t[g]*lA, mu, 1/pow(sigma,2))*lA*exp(-c*t[g]) - c*LA[g-1] + (1-switchA[g])*BA*P0*dnorm(1.5-t[g]*lA, mu, 1/pow(sigma,2))*lA*exp(-c*t[g])
+    
+    dRN[g-1] <-  BN*P0*dnorm(1-t[g]*lN, mu, 1/pow(sigma,2))*lN*exp(-c*t[g]) - switchN[g]*P0*dnorm(0.5-t[g]*lN, mu, 1/pow(sigma,2))*lN*exp(-c*t[g]) - c*RN[g-1] - (1-switchN[g])*BN*P0*dnorm(1.5-t[g]*lN, mu, 1/pow(sigma,2))*lN*exp(-c*t[g])
+    dLN[g-1] <- switchN[g]*P0*dnorm(0.5-t[g]*lN, mu, 1/pow(sigma,2))*lN*exp(-c*t[g]) - P0*dnorm(1-t[g]*lN, mu, 1/pow(sigma,2))*lN*exp(-c*t[g]) - c*LN[g-1] + (1-switchN[g])*BN*P0*dnorm(1.5-t[g]*lN, mu, 1/pow(sigma,2))*lN*exp(-c*t[g])
+    
+    # Update variables (Euler, timestep h = 1)
+    RA[g] <- max(0, RA[g-1] + dRA[g-1]*h)
+    LA[g] <- max(0, LA[g-1] + dLA[g-1]*h)
+    
+    RN[g] <- max(0, RN[g-1] + dRN[g-1]*h)
+    LN[g] <- max(0, LN[g-1] + dLN[g-1]*h)
+    
+  } #end time t
+
+  
+  ################################################
+  ## Likelihood
+  ################################################
+  
+  
+  for(t in 1:e){ #t indexes the time intervalAs of interest
+    for (z in 1:np){ #z indexes for individual mice
+      
+      LateA[t,z] ~ dnorm(((LA[time.int[t]])),1/pow(sd,2))
+      RingA[t,z] ~ dnorm(((RA[time.int[t]])),1/pow(sd,2))
+      
+      LateN[t,z] ~ dnorm(((LN[time.int[t]])),1/pow(sd,2))
+      RingN[t,z] ~ dnorm(((RN[time.int[t]])),1/pow(sd,2))
+    
+    }
+  }
+}
