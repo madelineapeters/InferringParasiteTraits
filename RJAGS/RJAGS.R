@@ -18,7 +18,7 @@ library(ggplot2)
 # Also specify step-size h, number of steps (d) and number of time points (e) in data list
 # Add hyperparameters for priors
 
-RFD=read.csv(paste(getwd(),"Real_Fucking_Data.csv",sep="/"))
+RFD=#read.csv(), read in .csv file containing data from Khoury et al. 2017 (provided by authors via personal communication)
 names(RFD)[5:7] = c("ddr","dds","ddt") #donor cell-donor parasites rings and late stages
 names(RFD)[9:11] = c("drr","drs","drt") #donor cell-recipient parasites rings and late stages
 names(RFD)[13:15] = c("rdr","rds","rdt") #recipient cell-donor parasites rings and late stages
