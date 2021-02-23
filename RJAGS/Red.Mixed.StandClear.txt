@@ -11,8 +11,8 @@ model {
   
   
   #Fixed effects
-  BN ~ dunif(0,0.3)
-  BA ~ dunif(0.25,0.65)
+  kN ~ dunif(0,0.3)
+  kA ~ dunif(0.25,0.65)
   lN = 1
   lA = 1
   mu ~ dunif(0,1)
@@ -41,10 +41,10 @@ model {
       switch[g,z] <- ifelse(t[g,z]*lA<0.5, 1, 0)
       
       # Changes from time t-1 to time t (timestep h = 1 hour)
-      dR[g-1,z] <-  BA*P0*dnorm(1-t[g,z]*lA, mu, 1/pow(sigma,2))*lA*exp(-c[z]*t[g,z]) - switch[g,z]*P0*dnorm(0.5-t[g,z]*lA, mu, 1/pow(sigma,2))*lA*exp(-c[z]*t[g,z]) - c[z]*R[g-1,z] - (1-switch[g,z])*BA*P0*dnorm(1.5-t[g,z]*lA, mu, 1/pow(sigma,2))*lA*exp(-c[z]*t[g,z])
-      dL[g-1,z] <- switch[g,z]*P0*dnorm(0.5-t[g,z]*lA, mu, 1/pow(sigma,2))*lA*exp(-c[z]*t[g,z]) - P0*dnorm(1-t[g,z]*lA, mu, 1/pow(sigma,2))*lA*exp(-c[z]*t[g,z]) - c[z]*L[g-1,z] + (1-switch[g,z])*BA*P0*dnorm(1.5-t[g,z]*lA, mu, 1/pow(sigma,2))*lA*exp(-c[z]*t[g,z])
+      dR[g-1,z] <-  kA*P0*dnorm(1-t[g,z]*lA, mu, 1/pow(sigma,2))*lA*exp(-c[z]*t[g,z]) - switch[g,z]*P0*dnorm(0.5-t[g,z]*lA, mu, 1/pow(sigma,2))*lA*exp(-c[z]*t[g,z]) - c[z]*R[g-1,z] - (1-switch[g,z])*kA*P0*dnorm(1.5-t[g,z]*lA, mu, 1/pow(sigma,2))*lA*exp(-c[z]*t[g,z])
+      dL[g-1,z] <- switch[g,z]*P0*dnorm(0.5-t[g,z]*lA, mu, 1/pow(sigma,2))*lA*exp(-c[z]*t[g,z]) - P0*dnorm(1-t[g,z]*lA, mu, 1/pow(sigma,2))*lA*exp(-c[z]*t[g,z]) - c[z]*L[g-1,z] + (1-switch[g,z])*kA*P0*dnorm(1.5-t[g,z]*lA, mu, 1/pow(sigma,2))*lA*exp(-c[z]*t[g,z])
       
-      # Update variaBAlAes (EulAer, timestep h = 1)
+      # Update variables (Euler, timestep h = 1)
       R[g,z] <- max(0.01, R[g-1,z] + dR[g-1,z]*h)
       L[g,z] <- max(0.01, L[g-1,z] + dL[g-1,z]*h)
       
@@ -68,10 +68,10 @@ for (z in (nR+1):nL){
     switch[g,z] <- ifelse(t[g,z]*lN<0.5, 1, 0)
     
     # Changes from time t-1 to time t (timestep h = 1 hour)
-    dR[g-1,z] <-  BN*P0*dnorm(1-t[g,z]*lN, mu, 1/pow(sigma,2))*lN*exp(-c[z]*t[g,z]) - switch[g,z]*P0*dnorm(0.5-t[g,z]*lN, mu, 1/pow(sigma,2))*lN*exp(-c[z]*t[g,z]) - c[z]*R[g-1,z] - (1-switch[g,z])*BN*P0*dnorm(1.5-t[g,z]*lN, mu, 1/pow(sigma,2))*lN*exp(-c[z]*t[g,z])
-    dL[g-1,z] <- switch[g,z]*P0*dnorm(0.5-t[g,z]*lN, mu, 1/pow(sigma,2))*lN*exp(-c[z]*t[g,z]) - P0*dnorm(1-t[g,z]*lN, mu, 1/pow(sigma,2))*lN*exp(-c[z]*t[g,z]) - c[z]*L[g-1,z] + (1-switch[g,z])*BN*P0*dnorm(1.5-t[g,z]*lN, mu, 1/pow(sigma,2))*lN*exp(-c[z]*t[g,z])
+    dR[g-1,z] <-  kN*P0*dnorm(1-t[g,z]*lN, mu, 1/pow(sigma,2))*lN*exp(-c[z]*t[g,z]) - switch[g,z]*P0*dnorm(0.5-t[g,z]*lN, mu, 1/pow(sigma,2))*lN*exp(-c[z]*t[g,z]) - c[z]*R[g-1,z] - (1-switch[g,z])*kN*P0*dnorm(1.5-t[g,z]*lN, mu, 1/pow(sigma,2))*lN*exp(-c[z]*t[g,z])
+    dL[g-1,z] <- switch[g,z]*P0*dnorm(0.5-t[g,z]*lN, mu, 1/pow(sigma,2))*lN*exp(-c[z]*t[g,z]) - P0*dnorm(1-t[g,z]*lN, mu, 1/pow(sigma,2))*lN*exp(-c[z]*t[g,z]) - c[z]*L[g-1,z] + (1-switch[g,z])*kN*P0*dnorm(1.5-t[g,z]*lN, mu, 1/pow(sigma,2))*lN*exp(-c[z]*t[g,z])
     
-    # Update variaBAlAes (EulAer, timestep h = 1)
+    # Update variables (Euler, timestep h = 1)
     R[g,z] <- max(0.01, R[g-1,z] + dR[g-1,z]*h)
     L[g,z] <- max(0.01, L[g-1,z] + dL[g-1,z]*h)
     
